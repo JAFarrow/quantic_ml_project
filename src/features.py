@@ -177,6 +177,7 @@ def build_preprocessor(df: pd.DataFrame, cols: SpecialCols = SpecialCols()) -> C
         ("imported_symbols_summary", Pipeline(steps=[
             ("imputer", SimpleImputer(strategy="constant", fill_value="")),
             ("summaries", SymbolsSummaryTransformer()),
+            ("scaler", StandardScaler()),
         ]), [cols.imported_symbols]),
     ]
 
