@@ -1,0 +1,58 @@
+{
+  "model_name": "xgboost",
+  "target_col": "Label",
+  "seed": 17,
+  "trained_at_utc": "2026-02-21T11:49:31.502884+00:00",
+  "n_rows_total": 47701,
+  "expected_input_columns": [
+    "BaseOfCode",
+    "BaseOfData",
+    "Characteristics",
+    "DllCharacteristics",
+    "Entropy",
+    "FileAlignment",
+    "FirstSeenDate",
+    "Identify",
+    "ImageBase",
+    "ImportedDlls",
+    "ImportedSymbols",
+    "Machine",
+    "Magic",
+    "NumberOfRvaAndSizes",
+    "NumberOfSections",
+    "NumberOfSymbols",
+    "PE_TYPE",
+    "PointerToSymbolTable",
+    "SHA1",
+    "Size",
+    "SizeOfCode",
+    "SizeOfHeaders",
+    "SizeOfImage",
+    "SizeOfInitializedData",
+    "SizeOfOptionalHeader",
+    "SizeOfUninitializedData",
+    "TimeDateStamp"
+  ],
+  "training_mode": "full_dataset_refit_after_cv_tuning",
+  "tuning": {
+    "search_type": "RandomizedSearchCV",
+    "scoring": "roc_auc",
+    "cv_folds": 5,
+    "n_iter": 100,
+    "best_cv_auc": 0.9997722769578521,
+    "best_params": {
+      "clf__subsample": 1.0,
+      "clf__reg_lambda": 3.0,
+      "clf__n_estimators": 500,
+      "clf__min_child_weight": 2,
+      "clf__max_depth": 8,
+      "clf__learning_rate": 0.05,
+      "clf__gamma": 0,
+      "clf__colsample_bytree": 0.6
+    }
+  },
+  "artifacts": {
+    "model": "artifacts/model.joblib",
+    "metadata": "artifacts/model_metadata.json"
+  }
+}
