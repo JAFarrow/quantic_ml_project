@@ -2,7 +2,7 @@
   "model_name": "xgboost",
   "target_col": "Label",
   "seed": 17,
-  "trained_at_utc": "2026-02-21T11:49:31.502884+00:00",
+  "trained_at_utc": "2026-02-21T20:17:58.198492+00:00",
   "n_rows_total": 47701,
   "expected_input_columns": [
     "BaseOfCode",

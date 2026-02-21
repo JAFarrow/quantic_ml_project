@@ -1,0 +1,1 @@
+from .insert_controller import handle_insert

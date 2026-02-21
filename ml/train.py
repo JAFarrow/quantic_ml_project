@@ -11,7 +11,7 @@ from sklearn.model_selection import StratifiedKFold, RandomizedSearchCV
 from sklearn.pipeline import Pipeline
 from xgboost import XGBClassifier
 
-from features import make_xy, build_preprocessor
+from .features import make_xy, build_preprocessor
 
 
 # =========================
