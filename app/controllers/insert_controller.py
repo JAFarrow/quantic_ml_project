@@ -1,4 +1,5 @@
 from flask import request
+from marshmallow import ValidationError
 
 from ..services import predict_rows
 from ..models import PredictionBatchSchema
