@@ -7,6 +7,7 @@ MODEL_PATH = "artifacts/model.joblib"
 
 _pipeline = None
 
+
 def get_pipeline():
     global _pipeline
     if _pipeline is None:
@@ -24,11 +25,7 @@ def predict_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
     results: list[dict[str, Any]] = []
     for i, pred in enumerate(preds):
-        item = {
-            "row_index": i,
-            "prediction": int(pred),
-            "probability": float(probs[i])
-        }
+        item = {"row_index": i, "prediction": int(pred), "probability": float(probs[i])}
         results.append(item)
 
     return results

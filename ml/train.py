@@ -43,21 +43,26 @@ def load_and_prepare_data(path: Path) -> tuple[pd.DataFrame, pd.Series]:
 def make_xgboost_pipeline(X_full: pd.DataFrame) -> Pipeline:
     pre = build_preprocessor(X_full)
 
-    return Pipeline([
-        ("preprocess", pre),
-        ("clf", XGBClassifier(
-            objective="binary:logistic",
-            eval_metric="auc",
-            random_state=SEED,
-            tree_method="hist",
-            n_jobs=-1,
-            n_estimators=500,
-            learning_rate=0.05,
-            max_depth=6,
-            subsample=0.8,
-            colsample_bytree=0.8,
-        )),
-    ])
+    return Pipeline(
+        [
+            ("preprocess", pre),
+            (
+                "clf",
+                XGBClassifier(
+                    objective="binary:logistic",
+                    eval_metric="auc",
+                    random_state=SEED,
+                    tree_method="hist",
+                    n_jobs=-1,
+                    n_estimators=500,
+                    learning_rate=0.05,
+                    max_depth=6,
+                    subsample=0.8,
+                    colsample_bytree=0.8,
+                ),
+            ),
+        ]
+    )
 
 
 def get_xgb_param_candidates() -> dict:
@@ -108,7 +113,9 @@ def tune_xgboost_on_full_data(
 # =========================
 # Artifact I/O
 # =========================
-def save_artifacts(model: Pipeline, metadata: dict, artifact_dir: Path = ARTIFACT_DIR) -> None:
+def save_artifacts(
+    model: Pipeline, metadata: dict, artifact_dir: Path = ARTIFACT_DIR
+) -> None:
     artifact_dir.mkdir(parents=True, exist_ok=True)
 
     model_path = artifact_dir / "model.joblib"

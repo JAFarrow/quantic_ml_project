@@ -27,6 +27,7 @@ def _set_seeds(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed)
     import torch
+
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
@@ -84,7 +85,9 @@ def fit_predict_proba(
             return self.net(x)
 
     model = MLP().to(device)
-    opt = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
+    opt = torch.optim.AdamW(
+        model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay
+    )
     loss_fn = nn.BCEWithLogitsLoss()
 
     loader = DataLoader(

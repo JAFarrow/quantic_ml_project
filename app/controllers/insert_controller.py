@@ -6,6 +6,7 @@ from ..models import PredictionBatchSchema
 
 batch_schema = PredictionBatchSchema()
 
+
 def handle_insert(req: request):
     payload = req.get_json()
     try:
@@ -14,7 +15,7 @@ def handle_insert(req: request):
         return {
             "success": False,
             "message": "Validation failed",
-            "errors": err.messages
+            "errors": err.messages,
         }, 422
 
     rows = validated["rows"]
@@ -25,7 +26,7 @@ def handle_insert(req: request):
         return {
             "success": False,
             "message": "Prediction failed",
-            "errors": {"server": [str(e)]}
+            "errors": {"server": [str(e)]},
         }, 500
 
     return {
@@ -34,5 +35,5 @@ def handle_insert(req: request):
         "data": {
             "count": len(predictions),
             "results": predictions,
-        }
+        },
     }, 200

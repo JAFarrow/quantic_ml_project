@@ -17,7 +17,7 @@ from pandas.api.types import is_numeric_dtype
 
 
 TARGET_COL = "Label"
-DROP_COLS = ["SHA1", 'Magic', 'PE_TYPE', 'SizeOfOptionalHeader']
+DROP_COLS = ["SHA1", "Magic", "PE_TYPE", "SizeOfOptionalHeader"]
 _DLL_RE = re.compile(r"^[a-z0-9_.-]+\.dll$")
 
 
@@ -40,6 +40,7 @@ def dll_tokenizer(doc: str):
 
 class To1DText(BaseEstimator, TransformerMixin):
     """Convert ColumnTransformer (n,1) input to a clean 1D array of strings."""
+
     def fit(self, X, y=None):
         self.is_fitted_ = True
         return self
@@ -62,6 +63,7 @@ class DatePartsTransformer(BaseEstimator, TransformerMixin):
     """
     Turns YYYY-MM-DD strings into numeric features: year, month.
     """
+
     def __init__(self):
         self.feature_names_ = ["first_seen_year", "first_seen_month"]
 
@@ -72,10 +74,12 @@ class DatePartsTransformer(BaseEstimator, TransformerMixin):
     def transform(self, X):
         s = pd.Series(np.asarray(X).ravel())
         dt = pd.to_datetime(s, errors="coerce")
-        out = np.column_stack([
-            dt.dt.year.fillna(0).astype(int),
-            dt.dt.month.fillna(0).astype(int),
-        ])
+        out = np.column_stack(
+            [
+                dt.dt.year.fillna(0).astype(int),
+                dt.dt.month.fillna(0).astype(int),
+            ]
+        )
         return out
 
     def get_feature_names_out(self, input_features=None):
@@ -86,6 +90,7 @@ class MissingFlagTransformer(BaseEstimator, TransformerMixin):
     """
     Encodes missing vs present for a single column as 0/1.
     """
+
     def __init__(self, feature_name: str):
         self.feature_name = feature_name
 
@@ -106,6 +111,7 @@ class SymbolsSummaryTransformer(BaseEstimator, TransformerMixin):
     Extract cheap numeric summaries from the huge ImportedSymbols string:
       - token count (split on whitespace)
     """
+
     def __init__(self):
         self.feature_names_ = ["token_count"]
 
@@ -126,7 +132,9 @@ class SymbolsSummaryTransformer(BaseEstimator, TransformerMixin):
         return np.array(self.feature_names_, dtype=object)
 
 
-def build_preprocessor(df: pd.DataFrame, cols: SpecialCols = SpecialCols()) -> ColumnTransformer:
+def build_preprocessor(
+    df: pd.DataFrame, cols: SpecialCols = SpecialCols()
+) -> ColumnTransformer:
     """
     Returns a sklearn ColumnTransformer that:
       - scales numeric columns
@@ -136,55 +144,74 @@ def build_preprocessor(df: pd.DataFrame, cols: SpecialCols = SpecialCols()) -> C
       - extracts summary features from ImportedSymbols
       - drops ID + raw string columns not meant for modeling
     """
-    exclude = set([TARGET_COL] + DROP_COLS + [
-        cols.first_seen, cols.identify, cols.imported_dlls, cols.imported_symbols
-    ])
+    exclude = set(
+        [TARGET_COL]
+        + DROP_COLS
+        + [cols.first_seen, cols.identify, cols.imported_dlls, cols.imported_symbols]
+    )
 
     numeric_cols = [
-        c for c in df.columns
-        if c not in exclude and is_numeric_dtype(df[c])
+        c for c in df.columns if c not in exclude and is_numeric_dtype(df[c])
     ]
 
-    numeric_pipe = Pipeline(steps=[
-        ("imputer", SimpleImputer(strategy="median")),
-        ("scaler", StandardScaler()),
-    ])
+    numeric_pipe = Pipeline(
+        steps=[
+            ("imputer", SimpleImputer(strategy="median")),
+            ("scaler", StandardScaler()),
+        ]
+    )
 
-    dll_pipe = Pipeline(steps=[
-        ("to_text", To1DText()),
-        ("vectorizer", CountVectorizer(
-            tokenizer=dll_tokenizer,
-            lowercase=False, #lowercased in tokenizer
-            token_pattern=None,
-            binary=True
-        )),
-    ])
+    dll_pipe = Pipeline(
+        steps=[
+            ("to_text", To1DText()),
+            (
+                "vectorizer",
+                CountVectorizer(
+                    tokenizer=dll_tokenizer,
+                    lowercase=False,  # lowercased in tokenizer
+                    token_pattern=None,
+                    binary=True,
+                ),
+            ),
+        ]
+    )
 
     transformers = [
         ("num", numeric_pipe, numeric_cols),
-
-        ("first_seen_dateparts", Pipeline(steps=[
-            ("imputer", SimpleImputer(strategy="constant", fill_value="")),
-            ("dateparts", DatePartsTransformer()),
-        ]), [cols.first_seen]),
-
-        ("identify_missing", Pipeline(steps=[
-            ("missingflag", MissingFlagTransformer("identify_missing")),
-        ]), [cols.identify]),
-
+        (
+            "first_seen_dateparts",
+            Pipeline(
+                steps=[
+                    ("imputer", SimpleImputer(strategy="constant", fill_value="")),
+                    ("dateparts", DatePartsTransformer()),
+                ]
+            ),
+            [cols.first_seen],
+        ),
+        (
+            "identify_missing",
+            Pipeline(
+                steps=[
+                    ("missingflag", MissingFlagTransformer("identify_missing")),
+                ]
+            ),
+            [cols.identify],
+        ),
         ("imported_dlls", dll_pipe, [cols.imported_dlls]),
-
-        ("imported_symbols_summary", Pipeline(steps=[
-            ("imputer", SimpleImputer(strategy="constant", fill_value="")),
-            ("summaries", SymbolsSummaryTransformer()),
-            ("scaler", StandardScaler()),
-        ]), [cols.imported_symbols]),
+        (
+            "imported_symbols_summary",
+            Pipeline(
+                steps=[
+                    ("imputer", SimpleImputer(strategy="constant", fill_value="")),
+                    ("summaries", SymbolsSummaryTransformer()),
+                    ("scaler", StandardScaler()),
+                ]
+            ),
+            [cols.imported_symbols],
+        ),
     ]
 
-    preprocessor = ColumnTransformer(
-        transformers=transformers,
-        remainder="drop"
-    )
+    preprocessor = ColumnTransformer(transformers=transformers, remainder="drop")
     return preprocessor
 
 

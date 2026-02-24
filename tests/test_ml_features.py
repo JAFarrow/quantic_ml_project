@@ -64,7 +64,9 @@ def test_to1dtext_handles_varied_inputs():
 
 def test_dateparts_transformer_coerces_invalid_values():
     transformer = DatePartsTransformer()
-    out = transformer.fit_transform(["2025-03-15", None, ""],)
+    out = transformer.fit_transform(
+        ["2025-03-15", None, ""],
+    )
     assert out.shape == (3, 2)
     assert (out[0] == np.array([2025, 3])).all()
     assert (out[1] == np.array([0, 0])).all()

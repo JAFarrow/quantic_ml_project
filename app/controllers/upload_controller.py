@@ -10,25 +10,22 @@ from ..helpers import build_evaluation
 
 batch_schema = PredictionBatchSchema()
 
+
 def handle_upload(req: request):
-    file = req.files['file']
-    
+    file = req.files["file"]
+
     if not file or file.filename == "":
         return {
             "success": False,
             "message": "No file selected",
-            "errors": {
-                "file": "Empty filename"
-            }
+            "errors": {"file": "Empty filename"},
         }, 400
 
     if not file.filename.lower().endswith(".csv"):
         return {
             "success": False,
             "message": "Invalid file type",
-            "errors": {
-                "file": "Only csv files are supported"
-            }
+            "errors": {"file": "Only csv files are supported"},
         }, 415
 
     try:
@@ -38,9 +35,7 @@ def handle_upload(req: request):
             return {
                 "success": False,
                 "message": "Uploaded file is empty",
-                "errors": {
-                    "file": "Empty file content"
-                }
+                "errors": {"file": "Empty file content"},
             }, 400
 
         text = raw.decode("utf-8")
@@ -51,7 +46,7 @@ def handle_upload(req: request):
 
         rows = df.to_dict(orient="records")
 
-        validated = batch_schema.load({ "rows": rows })
+        validated = batch_schema.load({"rows": rows})
 
         predictions = predict_rows(validated["rows"])
 
@@ -59,9 +54,9 @@ def handle_upload(req: request):
             evaluation = build_evaluation(y_true, predictions)
         else:
             evaluation = {
-            "available": False,
-            "message": "No label column found. Predictions returned without evaluation",
-        }
+                "available": False,
+                "message": "No label column found. Predictions returned without evaluation",
+            }
 
         return {
             "success": True,
@@ -69,8 +64,8 @@ def handle_upload(req: request):
             "data": {
                 "count": len(predictions),
                 "results": predictions,
-                "evaluation": evaluation
-            }
+                "evaluation": evaluation,
+            },
         }, 200
 
     except UnicodeDecodeError:
@@ -82,21 +77,21 @@ def handle_upload(req: request):
 
     except ParserError as e:
         return {
-                "success": False,
-                "message": "Invalid CSV format",
-                "errors": {"file": str(e)},
-            }, 422
+            "success": False,
+            "message": "Invalid CSV format",
+            "errors": {"file": str(e)},
+        }, 422
 
     except ValidationError as e:
         return {
-                "success": False,
-                "message": "Validation failed",
-                "errors": e.messages,
-            }, 422
+            "success": False,
+            "message": "Validation failed",
+            "errors": e.messages,
+        }, 422
 
     except Exception as e:
         return {
             "success": False,
             "message": "Prediction failed",
-            "errors": {"server": [str(e)]}
+            "errors": {"server": [str(e)]},
         }, 500

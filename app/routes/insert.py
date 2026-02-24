@@ -4,16 +4,15 @@ from marshmallow import ValidationError
 
 from ..controllers import handle_insert
 
-insert_bp = Blueprint('insert', __name__)
+insert_bp = Blueprint("insert", __name__)
 
-@insert_bp.route('/insert', methods=['POST'])
+
+@insert_bp.route("/insert", methods=["POST"])
 def insert_post():
     if not request.is_json:
         return {
             "success": False,
             "message": "Invalid JSON body",
-            "errors": {
-                "request": "Request does not contain json"
-            }
+            "errors": {"request": "Request does not contain json"},
         }, 400
     return handle_insert(request)

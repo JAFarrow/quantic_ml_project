@@ -51,9 +51,7 @@ def split_data(
     test_size: float = TEST_SIZE,
     seed: int = SEED,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
-    return train_test_split(
-        X, y, test_size=test_size, random_state=seed, stratify=y
-    )
+    return train_test_split(X, y, test_size=test_size, random_state=seed, stratify=y)
 
 
 # =========================
@@ -61,65 +59,97 @@ def split_data(
 # =========================
 def make_models(preprocessor: Pipeline) -> Dict[str, Optional[Pipeline]]:
     return {
-        "logistic_regression": Pipeline([
-            ("preprocess", preprocessor),
-            ("clf", LogisticRegression(
-                max_iter=10000,
-                random_state=SEED,
-            )),
-        ]),
-        "decision_tree": Pipeline([
-            ("preprocess", preprocessor),
-            ("clf", DecisionTreeClassifier(
-                random_state=SEED,
-                class_weight="balanced",
-                max_depth=None,
-                min_samples_leaf=5,
-            )),
-        ]),
-        "random_forest": Pipeline([
-            ("preprocess", preprocessor),
-            ("clf", RandomForestClassifier(
-                n_estimators=500,
-                random_state=SEED,
-                class_weight="balanced_subsample",
-                n_jobs=-1,
-            )),
-        ]),
-        "xgboost": Pipeline([
-            ("preprocess", preprocessor),
-            ("clf", XGBClassifier(
-                n_estimators=500,
-                learning_rate=0.05,
-                max_depth=6,
-                subsample=0.8,
-                colsample_bytree=0.8,
-                objective="binary:logistic",
-                eval_metric="auc",
-                random_state=SEED,
-                tree_method="hist",
-                n_jobs=-1,
-            )),
-        ]),
-        "adaboost": Pipeline([
-            ("preprocess", preprocessor),
-            ("clf", AdaBoostClassifier(
-                estimator=DecisionTreeClassifier(max_depth=2, random_state=SEED),
-                n_estimators=500,
-                learning_rate=0.05,
-                random_state=SEED,
-            )),
-        ]),
-        "knn": Pipeline([
-            ("preprocess", preprocessor),
-            ("clf", KNeighborsClassifier(
-                n_neighbors=31,
-                weights="distance",
-                metric="minkowski",
-                p=2,
-                n_jobs=-1,
-            )),
-        ]),
+        "logistic_regression": Pipeline(
+            [
+                ("preprocess", preprocessor),
+                (
+                    "clf",
+                    LogisticRegression(
+                        max_iter=10000,
+                        random_state=SEED,
+                    ),
+                ),
+            ]
+        ),
+        "decision_tree": Pipeline(
+            [
+                ("preprocess", preprocessor),
+                (
+                    "clf",
+                    DecisionTreeClassifier(
+                        random_state=SEED,
+                        class_weight="balanced",
+                        max_depth=None,
+                        min_samples_leaf=5,
+                    ),
+                ),
+            ]
+        ),
+        "random_forest": Pipeline(
+            [
+                ("preprocess", preprocessor),
+                (
+                    "clf",
+                    RandomForestClassifier(
+                        n_estimators=500,
+                        random_state=SEED,
+                        class_weight="balanced_subsample",
+                        n_jobs=-1,
+                    ),
+                ),
+            ]
+        ),
+        "xgboost": Pipeline(
+            [
+                ("preprocess", preprocessor),
+                (
+                    "clf",
+                    XGBClassifier(
+                        n_estimators=500,
+                        learning_rate=0.05,
+                        max_depth=6,
+                        subsample=0.8,
+                        colsample_bytree=0.8,
+                        objective="binary:logistic",
+                        eval_metric="auc",
+                        random_state=SEED,
+                        tree_method="hist",
+                        n_jobs=-1,
+                    ),
+                ),
+            ]
+        ),
+        "adaboost": Pipeline(
+            [
+                ("preprocess", preprocessor),
+                (
+                    "clf",
+                    AdaBoostClassifier(
+                        estimator=DecisionTreeClassifier(
+                            max_depth=2, random_state=SEED
+                        ),
+                        n_estimators=500,
+                        learning_rate=0.05,
+                        random_state=SEED,
+                    ),
+                ),
+            ]
+        ),
+        "knn": Pipeline(
+            [
+                ("preprocess", preprocessor),
+                (
+                    "clf",
+                    KNeighborsClassifier(
+                        n_neighbors=31,
+                        weights="distance",
+                        metric="minkowski",
+                        p=2,
+                        n_jobs=-1,
+                    ),
+                ),
+            ]
+        ),
         "torch_mlp": None,
     }
 
@@ -143,9 +173,7 @@ def run_torch_fold(
         seed=fold_seed,
         verbose=True,
     )
-    y_pred, y_proba = fit_predict_proba(
-        Xt_tr, y_tr.to_numpy(), Xt_val, cfg=cfg
-    )
+    y_pred, y_proba = fit_predict_proba(Xt_tr, y_tr.to_numpy(), Xt_val, cfg=cfg)
     return y_pred, y_proba
 
 
@@ -178,7 +206,9 @@ def cross_validate_models(
         fold_aucs, fold_accs = [], []
         model_start = time.time()
 
-        for fold, (train_idx, val_idx) in enumerate(cv.split(X_train, y_train), start=1):
+        for fold, (train_idx, val_idx) in enumerate(
+            cv.split(X_train, y_train), start=1
+        ):
             fold_start = time.time()
             print(f"\n[{name}] Fold {fold}/{cv.n_splits}")
 
@@ -210,14 +240,16 @@ def cross_validate_models(
             fold_accs.append(m.accuracy)
 
         total_time = time.time() - model_start
-        rows.append({
-            "model": name,
-            "cv_auc_mean": float(np.nanmean(fold_aucs)),
-            "cv_auc_std": float(np.nanstd(fold_aucs, ddof=1)),
-            "cv_acc_mean": float(np.nanmean(fold_accs)),
-            "cv_acc_std": float(np.nanstd(fold_accs, ddof=1)),
-            "total_time_sec": round(total_time, 2),
-        })
+        rows.append(
+            {
+                "model": name,
+                "cv_auc_mean": float(np.nanmean(fold_aucs)),
+                "cv_auc_std": float(np.nanstd(fold_aucs, ddof=1)),
+                "cv_acc_mean": float(np.nanmean(fold_accs)),
+                "cv_acc_std": float(np.nanstd(fold_accs, ddof=1)),
+                "total_time_sec": round(total_time, 2),
+            }
+        )
 
         print(f"\nFinished {name} in {total_time:.2f} sec")
 

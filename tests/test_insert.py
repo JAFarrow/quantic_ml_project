@@ -86,7 +86,9 @@ def test_insert_returns_validation_error_for_bad_rows(client):
 
 
 def test_insert_requires_json(client):
-    response = client.post("/api/insert", data="not-json", headers={"Content-Type": "text/plain"})
+    response = client.post(
+        "/api/insert", data="not-json", headers={"Content-Type": "text/plain"}
+    )
     assert response.status_code == 400
     data = response.get_json()
     assert data["success"] is False
