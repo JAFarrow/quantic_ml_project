@@ -16,16 +16,18 @@ def get_pipeline():
 
 def predict_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     pipeline = get_pipeline()
-
     df = pd.DataFrame(rows)
-    
-    preds = pipeline.predict(df)
 
-    results = []
+    preds = pipeline.predict(df)
+    proba = pipeline.predict_proba(df)
+    probs = proba[:, 1]
+
+    results: list[dict[str, Any]] = []
     for i, pred in enumerate(preds):
         item = {
             "row_index": i,
             "prediction": int(pred),
+            "probability": float(probs[i])
         }
         results.append(item)
 

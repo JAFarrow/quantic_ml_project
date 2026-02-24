@@ -1,1 +1,2 @@
 from .insert_controller import handle_insert
+from .upload_controller import handle_upload

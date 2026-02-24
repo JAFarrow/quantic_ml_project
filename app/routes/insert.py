@@ -11,6 +11,9 @@ def insert_post():
     if not request.is_json:
         return {
             "success": False,
-            "message": "Invalid JSON body"
+            "message": "Invalid JSON body",
+            "errors": {
+                "request": "Request does not contain json"
+            }
         }, 400
     return handle_insert(request)

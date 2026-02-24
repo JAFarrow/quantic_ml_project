@@ -6,7 +6,7 @@ from ..models import PredictionBatchSchema
 
 batch_schema = PredictionBatchSchema()
 
-def handle_insert(req: request) -> dict:
+def handle_insert(req: request):
     payload = req.get_json()
     try:
         validated = batch_schema.load(payload)
