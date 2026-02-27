@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -34,3 +35,31 @@ jobs:
             exit 1
           fi
           curl -sSf -X POST "$RENDER_DEPLOY_HOOK_URL"
+
+  smoke-test:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Smoke-test Render deployment
+        env:
+          RENDER_APP_URL: ${{ secrets.RENDER_APP_URL }}
+        run: |
+          set -uo pipefail
+          if [ -z "$RENDER_APP_URL" ]; then
+            echo "Render app URL not configured (secret: RENDER_APP_URL)"
+            exit 1
+          fi
+          attempts=12
+          delay=5
+          for i in $(seq 1 "$attempts"); do
+            echo "Smoke-test attempt $i/$attempts"
+            if curl -sSf "$RENDER_APP_URL/api/health"; then
+              echo "Render health endpoint responded"
+              exit 0
+            fi
+            echo "failed, waiting $delay seconds before retry"
+            sleep "$delay"
+          done
+          echo "Render health endpoint never came up"
+          exit 1
