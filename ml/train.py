@@ -13,7 +13,6 @@ from xgboost import XGBClassifier
 
 from .features import make_xy, build_preprocessor
 
-
 # =========================
 # Config
 # =========================

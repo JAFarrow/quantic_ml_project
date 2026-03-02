@@ -10,7 +10,7 @@ def create_app():
     from .routes import register_routes
 
     register_routes(app)
-    
+
     origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
 
     CORS(

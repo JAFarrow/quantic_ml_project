@@ -9,7 +9,6 @@ if str(ROOT) not in sys.path:
 
 from app import create_app
 
-
 BASE_ROW = {
     "BaseOfCode": 1024,
     "BaseOfData": 2048,
